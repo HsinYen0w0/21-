@@ -6,6 +6,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    width: 600px;
     margin: 0;
     overflow: hidden;
 }
@@ -139,3 +140,4 @@ button:disabled {
     0%, 100% { background-color: #1a4d1a; }
     50% { background-color: #2e7d32; }
 }
+

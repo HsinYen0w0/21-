@@ -62,6 +62,7 @@ body {
     font-weight: bold;
     font-size: 1.5rem;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    animation: dealCard 0.5s ease-out forwards;
 }
 .card.red {
     color: #ff0000;
@@ -134,5 +135,16 @@ button:disabled {
     0% { background-color: #1a4d1a; }
     50% { background-color: #2e7d32; }
     100% { background-color: #1a4d1a; }
+}
+
+@keyframes dealCard {
+    0% {
+        opacity: 0;
+        transform: translateY(-100px) rotate(20deg); /* 從上方飛入 */
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);      /* 回到原位 */
+    }
 }
 

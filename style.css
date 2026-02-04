@@ -32,7 +32,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    width: 95%;
+    width: 80%;
     max-width: 800px;
     height: 85vh;
     border: 10px solid #5d4037;
@@ -139,6 +139,7 @@ button:disabled {
     0%, 100% { background-color: #1a4d1a; }
     50% { background-color: #2e7d32; }
 }
+
 
 
 

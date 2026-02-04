@@ -32,10 +32,10 @@ function playSyntheticSound(frequency, type, duration, volume) {
 }
 
 // 定義各類遊戲音效
-function soundDeal() { playSyntheticSound(600, 'sine', 0.1, 0.6); }
-function soundChip() { playSyntheticSound(150, 'triangle', 0.2, 0.7); }
+function soundDeal() { playSyntheticSound(600, 'sine', 0.1, 0.5); }
+function soundChip() { playSyntheticSound(150, 'triangle', 0.2, 0.6); }
 function soundWin() {
-    playSyntheticSound(523, 'sine', 0.1, 0.7); // C5
+    playSyntheticSound(523, 'sine', 0.1, 0.6); // C5
     setTimeout(() => playSyntheticSound(659, 'sine', 0.2, 0.3), 100); // E5
 }
 function soundLose() {
@@ -43,7 +43,7 @@ function soundLose() {
     const gainNode = audioCtx.createGain();
     oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5);
-    gainNode.gain.setValueAtTime(0.7, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
     gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
@@ -211,5 +211,6 @@ document.getElementById('restart-btn').addEventListener('click', () => {
 
 // 頁面初次載入時顯示籌碼
 document.getElementById('total-chips').innerText = playerChips;
+
 
 

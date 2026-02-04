@@ -74,6 +74,7 @@ function updateUI(showAllDealer = false) {
     
     if (showAllDealer) {
         dealerContainer.innerHTML = dealerHand.map(c => getCardHTML(c)).join('');
+        dealerContainer.innerHTML = `<div class="card card-back">?</div>` + secondCardHTML;
         document.getElementById('dealer-score').innerText = calculateScore(dealerHand);
     } else {
         const secondCardHTML = getCardHTML(dealerHand[1]);
@@ -160,4 +161,5 @@ document.getElementById('restart-btn').addEventListener('click', () => {
     document.getElementById('deal-btn').style.display = 'inline-block';
     document.getElementById('bet-amount').style.display = 'inline-block';
     document.getElementById('deal-btn').disabled = false;
+
 });

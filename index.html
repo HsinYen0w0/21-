@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>網頁版 21 點遊戲</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="navigation">
+        <a href="../GameStart/index.html" class="back-btn">🏠 返回遊戲大廳</a>
+    </div>
+    
+    <div class="controls">
+        </div>
+    <div class="table">
+        <div class="dealer-section">
+            <h2>莊家手牌</h2>
+            <div id="dealer-cards" class="card-container">
+                </div>
+            <p>點數：<span id="dealer-score">?</span></p>
+        </div>
+
+        <div class="info-section">
+            <h1 id="status-message">準備好開局了嗎？</h1>
+            <p>目前籌碼：$<span id="total-chips">100</span></p>
+        </div>
+
+        <div class="player-section">
+            <div id="player-cards" class="card-container"></div>
+            <p>你的點數：<span id="player-score">0</span></p>
+            <div class="controls">
+                <input type="number" id="bet-amount" value="10" min="1">
+                <button id="deal-btn">發牌</button>
+                <button id="hit-btn" disabled>加牌 (Hit)</button>
+                <button id="stand-btn" disabled>停住 (Stand)</button>
+                <button id="restart-btn" style="display: none; background-color: #ff4444; color: white;">重新遊戲 (籌碼重置)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

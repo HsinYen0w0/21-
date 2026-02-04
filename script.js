@@ -8,6 +8,51 @@ let currentBet = 0;
 const suits = ['♥', '♦', '♣', '♠'];
 const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSyntheticSound(frequency, type, duration, volume) {
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + duration);
+}
+
+function soundDeal() {
+    playSyntheticSound(600, 'sine', 0.1, 0.3);
+}
+
+function soundChip() {
+    playSyntheticSound(150, 'triangle', 0.2, 0.5);
+}
+
+function soundWin() {
+    playSyntheticSound(523, 'sine', 0.1, 0.3); // C5
+    setTimeout(() => playSyntheticSound(659, 'sine', 0.2, 0.3), 100); // E5
+}
+
+function soundLose() {
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5);
+    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.5);
+}
+
 function createDeck() {
     deck = [];
     for (let suit of suits) {
@@ -44,6 +89,7 @@ function updateUI(showAllDealer = false) {
     const dealerContainer = document.getElementById('dealer-cards');
     const tableElement = document.querySelector('.table');
     const pScore = calculateScore(playerHand);
+    soundDeal();
 
     const getCardHTML = (card) => {
         const isRed = (card.suit === '♥' || card.suit === '♦') ? 'red' : '';
@@ -77,6 +123,8 @@ function updateUI(showAllDealer = false) {
 
 document.getElementById('deal-btn').addEventListener('click', () => {
     currentBet = parseInt(document.getElementById('bet-amount').value);
+    if (audioCtx.state === 'suspended') audioCtx.resume(); // 啟動音訊上下文
+    soundChip();
     if (isNaN(currentBet) || currentBet <= 0) return alert("請輸入有效的下注金額！");
     if (currentBet > playerChips) return alert("籌碼不足！");
 
@@ -125,6 +173,11 @@ function endGame(msg) {
     document.getElementById('hit-btn').disabled = true;
     document.getElementById('stand-btn').disabled = true;
     updateUI(true);
+    if (msg.includes("贏") || msg.includes("BLACKJACK")) {
+        soundWin();
+    } else if (msg.includes("輸") || msg.includes("爆掉了")) {
+        soundLose();
+    }
 
     if (playerChips <= 0) {
         document.getElementById('status-message').innerText = msg + " 你已經破產了！";
@@ -141,3 +194,4 @@ document.getElementById('restart-btn').addEventListener('click', () => {
 
 // 初始化顯示存檔的籌碼
 document.getElementById('total-chips').innerText = playerChips;
+

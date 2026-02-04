@@ -1,12 +1,12 @@
 let deck = [];
 let playerHand = [];
 let dealerHand = [];
-let playerChips = 100;
+// 讀取存檔，如果沒有存檔就給 100
+let playerChips = parseInt(localStorage.getItem('blackjack_chips')) || 100;
 let currentBet = 0;
 
 const suits = ['♥', '♦', '♣', '♠'];
 const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-
 
 function createDeck() {
     deck = [];
@@ -18,22 +18,16 @@ function createDeck() {
             deck.push({ suit, rank, value });
         }
     }
-    
+    // 洗牌
     for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
     }
 }
 
-document.querySelector('.back-btn').addEventListener('click', (e) => {
-    // 如果遊戲正在進行中 (發牌按鈕被停用代表局中)
-    if (document.getElementById('deal-btn').disabled && playerChips > 0) {
-        const leave = confirm("遊戲還在進行中，現在離開將會損失當前下注的籌碼，確定要返回大廳嗎？");
-        if (!leave) {
-            e.preventDefault(); // 取消跳轉動作
-        }
-    }
-});
+function saveChips() {
+    localStorage.setItem('blackjack_chips', playerChips);
+}
 
 function calculateScore(hand) {
     let score = hand.reduce((sum, card) => sum + card.value, 0);
@@ -48,57 +42,50 @@ function calculateScore(hand) {
 function updateUI(showAllDealer = false) {
     const playerContainer = document.getElementById('player-cards');
     const dealerContainer = document.getElementById('dealer-cards');
-    const playerScoreElement = document.getElementById('player-score');
-    
-    const pScore = calculateScore(playerHand);
     const tableElement = document.querySelector('.table');
+    const pScore = calculateScore(playerHand);
 
     const getCardHTML = (card) => {
         const isRed = (card.suit === '♥' || card.suit === '♦') ? 'red' : '';
-        const isGold = (pScore === 21) ? 'gold-glow' : '';
         return `<div class="card ${isRed}">${card.suit}${card.rank}</div>`;
     };
-    
+
     playerContainer.innerHTML = playerHand.map(c => getCardHTML(c)).join('');
 
-    playerScoreElement.innerText = pScore;
-    if (pScore === 21) {
-        playerScoreElement.classList.add('blackjack-animate');
-        tableElement.classList.add('party-time'); // 讓整張桌子一起閃爍
-        document.getElementById('status-message').innerText = "🔥 BLACKJACK! 您是天選之人！ 🔥";
-    } else {
-        playerScoreElement.classList.remove('blackjack-animate');
-        tableElement.classList.remove('party-time');
-    }
-
-    
     if (showAllDealer) {
         dealerContainer.innerHTML = dealerHand.map(c => getCardHTML(c)).join('');
-        dealerContainer.innerHTML = `<div class="card card-back">?</div>` + secondCardHTML;
         document.getElementById('dealer-score').innerText = calculateScore(dealerHand);
-    } else {
+    } else if (dealerHand.length > 0) {
+        // 第一張加上 card-back 樣式
         const secondCardHTML = getCardHTML(dealerHand[1]);
-        dealerContainer.innerHTML = `<div class="card">?</div>` + secondCardHTML;
+        dealerContainer.innerHTML = `<div class="card card-back">?</div>` + secondCardHTML;
         document.getElementById('dealer-score').innerText = "?";
     }
 
-    document.getElementById('player-score').innerText = calculateScore(playerHand);
+    document.getElementById('player-score').innerText = pScore;
     document.getElementById('total-chips').innerText = playerChips;
-}   
+
+    if (pScore === 21 && playerHand.length === 2) {
+        document.getElementById('player-score').classList.add('blackjack-animate');
+        tableElement.classList.add('party-time');
+    } else {
+        document.getElementById('player-score').classList.remove('blackjack-animate');
+        tableElement.classList.remove('party-time');
+    }
+    saveChips(); // 每次 UI 更新都存檔
+}
 
 document.getElementById('deal-btn').addEventListener('click', () => {
     currentBet = parseInt(document.getElementById('bet-amount').value);
-    if (isNaN(currentBet) || currentBet <= 0) {
-        return alert("請輸入有效的下注金額！");}
+    if (isNaN(currentBet) || currentBet <= 0) return alert("請輸入有效的下注金額！");
     if (currentBet > playerChips) return alert("籌碼不足！");
 
     playerChips -= currentBet;
-
     createDeck();
     playerHand = [deck.pop(), deck.pop()];
     dealerHand = [deck.pop(), deck.pop()];
-    
-    document.getElementById('status-message').innerText = ("遊戲進行中...... 下注了 $ "+ currentBet);
+
+    document.getElementById('status-message').innerText = "遊戲進行中... 下注: $" + currentBet;
     document.getElementById('deal-btn').disabled = true;
     document.getElementById('hit-btn').disabled = false;
     document.getElementById('stand-btn').disabled = false;
@@ -108,14 +95,8 @@ document.getElementById('deal-btn').addEventListener('click', () => {
 document.getElementById('hit-btn').addEventListener('click', () => {
     playerHand.push(deck.pop());
     updateUI();
-    const pScore = calculateScore(playerHand);
-    if (pScore > 21) {
+    if (calculateScore(playerHand) > 21) {
         endGame("你爆掉了！莊家獲勝。");
-    } else if (pScore === 21) {
-        // 如果剛好 21 點，幫玩家自動點擊「停住」
-        setTimeout(() => {
-            document.getElementById('stand-btn').click();
-        }, 1000); // 延遲一秒讓玩家欣賞一下動畫
     }
 });
 
@@ -149,17 +130,14 @@ function endGame(msg) {
         document.getElementById('status-message').innerText = msg + " 你已經破產了！";
         document.getElementById('restart-btn').style.display = 'inline-block';
         document.getElementById('deal-btn').style.display = 'none';
-        document.getElementById('bet-amount').style.display = 'none';
     }
 }
 
 document.getElementById('restart-btn').addEventListener('click', () => {
     playerChips = 100;
-    document.getElementById('total-chips').innerText = playerChips;
-    document.getElementById('status-message').innerText = "準備好開局了嗎？";
-    document.getElementById('restart-btn').style.display = 'none';
-    document.getElementById('deal-btn').style.display = 'inline-block';
-    document.getElementById('bet-amount').style.display = 'inline-block';
-    document.getElementById('deal-btn').disabled = false;
-
+    saveChips();
+    location.reload(); // 重新整理最快
 });
+
+// 初始化顯示存檔的籌碼
+document.getElementById('total-chips').innerText = playerChips;
